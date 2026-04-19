@@ -9,6 +9,15 @@ pub fn search<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
         .collect()
 }
 
+pub fn search_with_line_numbers<'a>(pattern: &str, content: &'a str) -> Vec<(usize, &'a str)> {
+    content
+        .lines()
+        .enumerate()
+        .filter(|(_, line)| line.contains(pattern))
+        .map(|(i, line)| (i + 1, line))
+        .collect()
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -32,7 +41,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::search;
+    use crate::{search, search_with_line_numbers};
 
     #[test]
     fn test_search_find_matching_lines() {
@@ -53,4 +62,15 @@ mod tests {
         let content = "hello\nworld";
         assert_eq!(search(pattern, content), Vec::<&str>::new());
     }
+
+    #[test]
+    fn test_search_with_line_numbers() {
+        let pattern = "fn";
+        let content = r#"let x = 1;
+fn main() {
+    println!("hello");
+}"#;
+        assert_eq!(search_with_line_numbers(pattern, content), vec![(2, "fn main() {")]);
+    }
+
 }
