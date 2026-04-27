@@ -18,6 +18,14 @@ pub fn search_with_line_numbers<'a>(pattern: &str, content: &'a str) -> Vec<(usi
         .collect()
 }
 
+pub fn search_case_insensitive<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
+    let pattern = pattern.to_lowercase();
+    content
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&pattern))
+        .collect()
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -48,7 +56,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::{search, search_with_line_numbers};
+    use crate::{search, search_with_line_numbers, search_case_insensitive};
 
     #[test]
     fn test_main_with_n_flag() {
@@ -93,4 +101,16 @@ fn main() {
         assert_eq!(search_with_line_numbers(pattern, content), vec![(2, "fn main() {")]);
     }
 
+    #[test]
+    fn test_search_case_insensitive() {
+        let pattern = "FN";
+        let content = r#"let x = 1;
+fn main() {
+    println!("hello");
+}"#;
+        assert_eq!(
+            search_case_insensitive(pattern, content),
+            vec!["fn main() {"]
+        );
+    }
 }
