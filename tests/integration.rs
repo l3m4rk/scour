@@ -1,3 +1,4 @@
+use std::io::Write;
 use std::process::Command;
 
 fn run_scour(args: &[&str]) -> String {
@@ -34,4 +35,28 @@ fn test_line_numbers() {
 fn test_no_match() {
     let output = run_scour(&["zzzzzz", TEST_FILE]);
     assert!(output.is_empty());
+}
+
+#[test]
+fn test_stdin_search() {
+    use std::io::Write;
+
+    let mut child = Command::new("cargo")
+        .args(["run", "--", "fn"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("Failed to spawn scour");
+
+    child
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(b"let x = 1;\nfn main() {\n    println!(\"hello\");\n}")
+        .unwrap();
+
+    let output = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+
+    assert!(stdout.contains("fn main()"));
 }

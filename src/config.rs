@@ -1,7 +1,6 @@
-
 pub struct Config {
     pub pattern: String,
-    pub filename: String,
+    pub filename: Option<String>,
     pub show_line_numbers: bool,
     pub case_insensitive: bool,
 }
@@ -19,13 +18,13 @@ impl Config {
                 "-n" => show_line_numbers = true,
                 "-i" => case_insensitive = true,
                 arg if pattern.is_none() => pattern = Some(arg.to_string()),
-                arg => filename = Some(arg.to_string())
+                arg => filename = Some(arg.to_string()),
             }
             i += 1;
         }
 
-        match (pattern, filename) {
-            (Some(pattern), Some(filename)) => Ok(Config {
+        match pattern {
+            Some(pattern) => Ok(Config {
                 pattern,
                 filename,
                 show_line_numbers,

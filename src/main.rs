@@ -2,9 +2,10 @@ mod config;
 mod search;
 
 use crate::config::Config;
-use std::env;
 use std::fs;
+use std::io::Read;
 use std::process;
+use std::{env, io};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -14,10 +15,20 @@ fn main() {
         process::exit(1);
     });
 
-    let content = fs::read_to_string(&config.filename).unwrap_or_else(|err| {
-        eprintln!("Error reading file '{}': {}", config.filename, err);
-        process::exit(1);
-    });
+    let content = match &config.filename {
+        Some(filename) => fs::read_to_string(filename).unwrap_or_else(|err| {
+            eprintln!("Error reading file '{}': {}", filename, err);
+            process::exit(1);
+        }),
+        None => {
+            let mut buf = String::new();
+            io::stdin().read_to_string(&mut buf).unwrap_or_else(|err| {
+                eprintln!("Error reading stdin: {}", err);
+                process::exit(1);
+            });
+            buf
+        }
+    };
 
     if config.show_line_numbers {
         for (n, line) in search::search_with_line_numbers(&config.pattern, &content) {
