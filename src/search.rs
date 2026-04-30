@@ -1,3 +1,6 @@
+use std::fs;
+use std::path::Path;
+
 pub fn search<'a>(pattern: &str, content: &'a str) -> Vec<&'a str> {
     content
         .lines()
@@ -20,6 +23,38 @@ pub fn search_case_insensitive<'a>(pattern: &str, content: &'a str) -> Vec<&'a s
         .lines()
         .filter(|line| line.to_lowercase().contains(&pattern))
         .collect()
+}
+
+pub fn search_recursive(pattern: &str, dir: &Path, case_insensitive: bool) -> Vec<String> {
+    let mut results = Vec::new();
+
+    let entries = fs::read_dir(dir).unwrap();
+
+    for entry in entries {
+        let entry = entry.unwrap();
+        let path = entry.path();
+
+        if path.is_dir() {
+            let nested = search_recursive(pattern, &path, case_insensitive);
+            results.extend(nested);
+        } else {
+            let content = fs::read_to_string(&path).unwrap_or_default();
+            let filename = path.display().to_string();
+
+            for line in content.lines() {
+                let matches = if case_insensitive {
+                    line.to_lowercase().contains(&pattern.to_lowercase())
+                } else {
+                    line.contains(pattern)
+                };
+
+                if matches {
+                    results.push(format!("{}: {}", filename, line));
+                }
+            }
+        }
+    }
+    results
 }
 
 #[cfg(test)]

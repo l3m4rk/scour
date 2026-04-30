@@ -1,10 +1,9 @@
-use std::io::Write;
 use std::process::Command;
 
 fn run_scour(args: &[&str]) -> String {
-    let output = Command::new("cargo")
-        .args(["run", "--"])
+    let output = Command::new(env!("CARGO_BIN_EXE_scour"))
         .args(args)
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
         .expect("Failed to run scour");
 
@@ -41,8 +40,9 @@ fn test_no_match() {
 fn test_stdin_search() {
     use std::io::Write;
 
-    let mut child = Command::new("cargo")
-        .args(["run", "--", "fn"])
+    let mut child = Command::new(env!("CARGO_BIN_EXE_scour"))
+        .args(["fn"])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .spawn()
@@ -59,4 +59,12 @@ fn test_stdin_search() {
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
 
     assert!(stdout.contains("fn main()"));
+}
+
+#[test]
+fn test_recursive_search() {
+    let output = run_scour(&["-r", "fn", "tests/fixtures"]);
+    assert!(output.contains("fn main()"));
+    assert!(output.contains("fn helper()"));
+    assert!(output.contains("fn helper2()"));
 }

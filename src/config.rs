@@ -3,6 +3,7 @@ pub struct Config {
     pub filename: Option<String>,
     pub show_line_numbers: bool,
     pub case_insensitive: bool,
+    pub recursive: bool,
 }
 
 impl Config {
@@ -11,12 +12,14 @@ impl Config {
         let mut filename = None;
         let mut show_line_numbers = false;
         let mut case_insensitive = false;
+        let mut recursive = false;
 
         let mut i = 1;
         while i < args.len() {
             match args[i].as_str() {
                 "-n" => show_line_numbers = true,
                 "-i" => case_insensitive = true,
+                "-r" => recursive = true,
                 arg if pattern.is_none() => pattern = Some(arg.to_string()),
                 arg => filename = Some(arg.to_string()),
             }
@@ -29,6 +32,7 @@ impl Config {
                 filename,
                 show_line_numbers,
                 case_insensitive,
+                recursive
             }),
             _ => Err("Usage: scour [-i][-n] <pattern> <file>"),
         }
