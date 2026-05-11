@@ -68,3 +68,9 @@ fn test_recursive_search() {
     assert!(output.contains("fn helper()"));
     assert!(output.contains("fn helper2()"));
 }
+
+#[test]
+fn test_count_matches() {
+    let output = run_scour(&["-c", "fn", TEST_FILE]);
+    assert_eq!(output.trim(), "2");
+}

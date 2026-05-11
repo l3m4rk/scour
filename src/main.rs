@@ -40,6 +40,9 @@ fn main() {
             for (n, line) in search::search_with_line_numbers(&config.pattern, &content) {
                 println!("{}: {}", n, line);
             }
+        } else if config.count {
+            let matches = search::search(&config.pattern, &content).len();
+            println!("{}", matches);
         } else if config.case_insensitive {
             for line in search::search_case_insensitive(&config.pattern, &content) {
                 println!("{}", line);
